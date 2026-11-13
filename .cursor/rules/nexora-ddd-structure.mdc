@@ -1,0 +1,14 @@
+---
+description: Luật DDD và cấu trúc folder cho platform/contexts
+globs: platform/**/*.{ts,tsx},contexts/**/*.{ts,tsx},composition/**/*.{ts,tsx},services/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# DDD structure
+
+- Mỗi context: `domain/`, `application/`, `infrastructure/`, `index.ts`.
+- `domain/` không import Next.js, SQL driver, hay context khác.
+- Context chỉ export qua `index.ts`. Không import sâu vào domain của context khác.
+- Wire port ở `composition/`.
+- `platform/` không chứa tên chứng từ trading/catalog.
+- Tồn kho chỉ đổi trong `contexts/inventory` qua port; trading không SQL trực tiếp vào balance.

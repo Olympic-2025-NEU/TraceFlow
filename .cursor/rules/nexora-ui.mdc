@@ -1,0 +1,13 @@
+---
+description: Quy ước UI App Router + Tailwind cho Nexora
+globs: app/**/*.{ts,tsx},components/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# UI
+
+- Stack: React, TypeScript, Tailwind; ưu tiên shadcn/ui khi cần primitive.
+- `(workspace)` cho ERP nội bộ; `(public)` cho Product Passport.
+- UI không tự quyết định quyền duyệt: dựa trên API/actor.
+- Confirm chứng từ là hành động tường minh của người dùng; AI chỉ điền draft.
+- Giữ layout đơn giản, một việc mỗi màn hình danh sách/chi tiết chứng từ.

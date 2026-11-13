@@ -1,0 +1,13 @@
+---
+description: Pipeline lệnh ghi và adapter HTTP
+globs: app/api/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# API pipeline
+
+- Route handler là adapter mỏng: parse input → gọi use case → map lỗi → response.
+- Không đặt quy tắc nghiệp vụ trong `route.ts`.
+- Lệnh ghi theo thứ tự: authenticate → authorize → idempotency → domain → commit (aggregate + outbox + audit) → dispatch sau commit.
+- Trạng thái chỉ đổi bằng action (`confirm`, `cancel`, …), không PATCH `status` tùy ý.
+- Mọi lỗi domain trả `code` ổn định; không lộ stack nội bộ cho client.

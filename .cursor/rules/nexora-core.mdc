@@ -1,0 +1,14 @@
+---
+description: Nguồn chân lý Nexora MVP — luôn áp dụng khi làm việc trong repo
+alwaysApply: true
+---
+
+# Nexora core
+
+- Phạm vi MVP và module lấy theo **Chương 6**: M01, M02, M03, M04, AI01. Không thêm finance, CRM, POS đầy đủ, sản xuất, QC nhiều bước vào MVP.
+- Tech stack lấy theo **Chương 7 §7.12**: Next.js Modular Monolith, React, TypeScript, Tailwind, PostgreSQL, Keycloak, Flowable, Redis, object storage, Python/LLM cho AI.
+- Triển khai **self-hosted**: một instance = một doanh nghiệp = một PostgreSQL. Không thiết kế SaaS multi-tenant tập trung.
+- Trước khi code module: đọc `documents/plans/<module>.md` + `documents/referents/CODING_RULES.md` + `documents/referents/FOLDER_STRUCTURE.md`.
+- Thứ tự ưu tiên tài liệu: `documents/referents/SOURCE_OF_TRUTH.md`.
+- Scaffold cũ `contexts/sales|finance|procurement|master-data` không còn chuẩn; cấu trúc đích là system/catalog/inventory/trading/traceability/federation.
+- AI chỉ tạo Draft; không tự confirm. Federation nhận message ≠ đã nhận đủ hàng.
