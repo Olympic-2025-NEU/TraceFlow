@@ -20,13 +20,13 @@ Thứ tự bắt buộc trong route/application handler:
 ## Trạng thái chứng từ
 
 - Trạng thái chỉ đổi qua hành động có tên (ví dụ `confirm`, `cancel`), không qua cập nhật cột `status` tùy ý.
-- MVP Trading: `Draft → Confirmed | Cancelled`. Giao dịch liên doanh nghiệp có thể thêm chờ xác nhận tiếp nhận / sai lệch.
+- MVP Trading: `Draft → Confirmed | Cancelled`; GoodsIssue v1 thêm `pending_approval → approved/rejected` trước Confirmed qua Flowable. Delivery state của transfer tách khỏi document status.
 - AI chỉ được tạo hoặc sửa ở trạng thái Draft. Confirm do người dùng.
 
 ## Sở hữu dữ liệu
 
 - Chỉ `inventory` được thay đổi số lượng tồn.
-- `trading` gọi port Inventory khi confirm phiếu nhập/xuất/kiểm kê/bán.
+- `trading` gọi port Inventory chỉ khi confirm GoodsReceipt (+), GoodsIssue (−), ReceivingConfirmation (+actual), Stocktake (±variance). PartnerTransfer/SaleRecord chỉ link issue đã trừ tồn, không gọi Inventory lần hai.
 - `traceability` không sửa tồn kho hay chứng từ trading; chỉ ghi sự kiện và quan hệ.
 - `federation` phân biệt xác nhận kỹ thuật (nhận message) và xác nhận nghiệp vụ (Receiving Confirmation).
 

@@ -29,7 +29,7 @@ Tham chiếu Chương 6.8 và 7.11–7.12.
 
 | Hướng | Nội dung |
 | --- | --- |
-| Phụ thuộc | PostgreSQL, Redis (queue/cache), Keycloak, API Gateway, object storage, Flowable |
+| Phụ thuộc | PostgreSQL (outbox nguồn bền vững), Keycloak, API Gateway, object storage, Flowable; Redis chỉ cache/coordination nếu cần |
 | Cung cấp | Actor, Transaction, Outbox, AuditRecorder, FileStore, Workflow, command pipeline và API được bảo vệ qua gateway |
 
 Không phụ thuộc module M01–M04.
@@ -41,7 +41,7 @@ Không phụ thuộc module M01–M04.
 
 ## 5. API bề mặt (dự kiến)
 
-- `GET /api/v1/health`
+- `GET /api/v1/health/live`, `GET /api/v1/health/ready`
 - `GET /api/v1/me`
 - Nội bộ: ports TypeScript cho contexts (không bắt buộc REST cho mọi cổng)
 
@@ -53,7 +53,7 @@ Không UI nghiệp vụ. Có thể có trang health/status trong console sau.
 
 - Unit: pipeline bước, idempotency key
 - Integration: outbox ghi cùng transaction rồi dispatch
-- Deployment: Compose lên được DB + app + Keycloak stub/dev
+- Deployment: Compose lên DB + ERP/core API + Keycloak thật + gateway + Flowable và storage có health; không tính stub là Done
 
 ## 8. Tiêu chí Done
 

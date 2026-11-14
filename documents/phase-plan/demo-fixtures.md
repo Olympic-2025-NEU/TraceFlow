@@ -16,15 +16,15 @@ B gửi message B→C với `issuerInstanceId=B`, `senderBatch=(B,B-B1)`, `origi
 
 | Bước | Action và owner movement | A balance | B balance | C balance | Event/điều kiện |
 | --- | --- | ---: | ---: | ---: | --- |
-| 0 | Seed product/batch/warehouse, không seed balance bằng SQL | 0 | 0 | 0 | Ba DB độc lập |
+| 0 | Seed product/batch/warehouse, không seed balance bằng SQL; Admin A chuyển batch A-B1 từ `inspect` sang `available` có audit | 0 | 0 | 0 | Ba DB độc lập; không issue lô `inspect` |
 | 1 | A confirm GoodsReceipt 20, `+20` | 20 | 0 | 0 | Một movement, audit, outbox |
 | 2 | A submit GoodsIssue 12 → Flowable Approver khác creator duyệt → confirm `−12` | 8 | 0 | 0 | Rejected/unfinished không đổi stock |
 | 3 | A confirm PartnerTransfer 12 gắn đúng issue bước 2 | 8 | 0 | 0 | Một federation outbox; **không trừ lần hai** |
 | 4 | B nhận message và trả technical ACK | 8 | 0 | 0 | Inbox/ACK, chưa nhận hàng thực tế |
-| 5 | B confirm ReceivingConfirmation actual 10, `+10` | 8 | 10 | 0 | Discrepancy `sent 12 − actual 10 = 2`; không GoodsReceipt thứ hai |
-| 6 | B confirm GoodsIssue 6, `−6`; confirm PartnerTransfer 6 gắn issue | 8 | 4 | 0 | Một movement giảm, một outbox; origin lot A được giữ |
-| 7 | C nhận message + technical ACK, confirm ReceivingConfirmation actual 6 `+6` | 8 | 4 | 6 | C lưu upstream summary A/B theo policy |
-| 8 | C confirm GoodsIssue bán 2 `−2`, SaleRecord link issue | 8 | 4 | 4 | SaleRecord **không trừ lần hai** |
+| 5 | B confirm ReceivingConfirmation actual 10, `+10`; Admin B chuyển batch B-B1 từ `inspect` sang `available` sau kiểm nguồn | 8 | 10 | 0 | Discrepancy `sent 12 − actual 10 = 2`; không GoodsReceipt thứ hai |
+| 6 | B submit GoodsIssue 6 purpose `partner_transfer`, Approver B duyệt, confirm `−6`; confirm PartnerTransfer 6 gắn issue | 8 | 4 | 0 | Một movement giảm, một outbox; origin lot A được giữ |
+| 7 | C nhận message + technical ACK, confirm ReceivingConfirmation actual 6 `+6`; Admin C chuyển batch C-B1 sang `available` | 8 | 4 | 6 | C lưu upstream summary A/B theo policy |
+| 8 | C submit GoodsIssue 2 purpose `sale`, Approver C duyệt, confirm `−2`; SaleRecord link issue | 8 | 4 | 4 | SaleRecord **không trừ lần hai** |
 
 Tổng tồn hiện biết cuối luồng là `8+4+4=16`, giảm 2 tại discrepancy giao hàng A→B và 2 đã bán so với 20 ban đầu. Không coi discrepancy 2 là hàng đã vào B; A đã xuất 12, chỉ B xác nhận 10. Đây là kịch bản kiểm tra, không phải định nghĩa kế toán hay xử lý mất mát hàng hóa.
 

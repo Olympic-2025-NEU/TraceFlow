@@ -1,5 +1,7 @@
 # Domain event, outbox và federation contract
 
+Trường payload theo từng event và ACK v1 ở [event-payloads-v1.md](./event-payloads-v1.md); BPMN/bridge ở [workflow-spec-v1.md](./workflow-spec-v1.md). Tài liệu này giữ invariant và ví dụ, không thay JSON Schema thực khi implement.
+
 ## 1. Ba loại sự kiện không được trộn
 
 | Loại | Ví dụ | Sở hữu/độ tin cậy |
@@ -15,35 +17,38 @@ Technical ACK = bên nhận đã ghi/kiểm tra message. Business Receiving Conf
 ```json
 {
   "schemaVersion": "1.0",
-  "messageId": "opaque-uuid",
-  "eventId": "opaque-uuid",
-  "eventType": "transfer.announced",
+  "messageId": "11111111-1111-4111-8111-111111111111",
+  "eventId": "22222222-2222-4222-8222-222222222222",
+  "eventType": "transfer.announced.v1",
   "issuerInstanceId": "A",
-  "recipientPartnerId": "partner-B",
+  "recipientInstanceId": "B",
   "occurredAt": "2026-11-14T08:00:00Z",
   "publishedAt": "2026-11-14T08:00:01Z",
-  "correlationId": "transfer-id",
-  "causationId": "issue-confirm-id",
-  "sourceDocument": { "type": "partner-transfer", "id": "opaque-id", "version": 1 },
+  "correlationId": "33333333-3333-4333-8333-333333333333",
+  "causationId": "44444444-4444-4444-8444-444444444444",
+  "sourceDocument": { "type": "partner_transfer", "id": "55555555-5555-4555-8555-555555555555", "version": 2 },
   "lots": [{
-    "originLot": { "issuerInstanceId": "A", "lotId": "A-lot-1" },
-    "senderBatch": { "instanceId": "A", "batchId": "A-batch-1" },
-    "product": { "instanceId": "A", "productId": "A-product-1" },
-    "quantity": "12.000", "unit": "EA"
+    "sourceLineId": "66666666-6666-4666-8666-666666666666",
+    "originLot": { "issuerInstanceId": "A", "lotId": "77777777-7777-4777-8777-777777777777" },
+    "senderBatch": { "instanceId": "A", "batchId": "77777777-7777-4777-8777-777777777777" },
+    "product": { "instanceId": "A", "productId": "88888888-8888-4888-8888-888888888888" },
+    "quantity": "12", "unit": "EA"
   }],
   "upstreamReferences": [],
-  "evidence": [{ "id": "public-or-partner-evidence-id", "checksum": "sha256:..." }],
-  "sharingPolicyVersion": "v1"
+  "evidence": [],
+  "sharingPolicyVersion": "v1",
+  "linkedIssueId": "99999999-9999-4999-8999-999999999999",
+  "sentQuantity": "12"
 }
 ```
 
-Ví dụ A→B chỉ định hình contract, không phải payload được phép gửi nguyên xi. Khi B→C, `issuerInstanceId=B`, `senderBatch` mang ID local B, `originLot` vẫn là `(A, A-lot-1)` **theo lời B** và `upstreamReferences` dẫn tới message A→B đã xác minh. C chỉ ghi nguồn A là `partner-asserted` nếu chưa có bằng chứng chính sách cho phép/chưa kiểm tra chuỗi. D07/D08 phải chốt định danh, đơn vị, precision, quyền chuyển tiếp, policy và ký/canonicalization nếu dùng chữ ký. Credential nằm ở HTTP/OIDC, không nhúng secret trong JSON. Số lượng dạng decimal string ở biên để tránh sai khác float.
+Ví dụ A→B dùng UUID synthetic đúng shape `transfer.announced.v1`; script seed phải thay bằng ID thật và lưu manifest. Khi B→C, `issuerInstanceId=B`, `senderBatch` mang ID local B, `originLot` vẫn là nguồn A **theo lời B** và `upstreamReferences` dẫn tới message A→B đã xác minh. C chỉ ghi nguồn A là `partner_asserted` nếu chưa kiểm tra chain/chính sách. D07/D08 chốt định danh, precision và quyền chuyển tiếp bằng test; payload hash dùng JCS theo `event-payloads-v1.md`. Credential nằm ở HTTP/OIDC, không nhúng secret trong JSON.
 
 ## 3. Bất biến dispatch/receive
 
-1. Sender chỉ tạo federation message từ nghiệp vụ **đã confirm**. Cùng transaction ghi document, inventory movement, audit, outbox. Mất mạng sau commit không rollback document.
+1. Sender chỉ tạo federation message từ nghiệp vụ **đã confirm**. Cùng transaction ghi document, movement **nếu loại chứng từ sở hữu movement theo D14**, audit, outbox. Transfer/sale không ghi movement lần hai. Mất mạng sau commit không rollback document.
 2. Worker chọn message đến hạn bằng lease; backoff + jitter, max attempts, dead-letter/manual retry, request ID và metric. Không giữ transaction mở trong lúc HTTP tới partner.
-3. Receiver xác thực `issuer` từ token/service account, so với partner_connection và recipient; schema_version/size/clock skew/policy hợp lệ. Unique `(issuer_instance_id, message_id)`; payload hash phát hiện ID dùng lại với nội dung khác.
+3. Receiver xác thực `issuer` từ token/service account, so với partner_connection và recipient; schema_version/size/policy hợp lệ, clock skew chỉ cảnh báo như `event-payloads-v1.md`. Unique `(issuer_instance_id, message_id)` và `(issuer_instance_id,event_id,event_type)`; payload hash phát hiện ID dùng lại với nội dung khác.
 4. Receiver ghi inbox, mapping/gap marker và technical ACK trong transaction. Replay cùng hash trả ACK tương đương, không ghi lại trace hoặc receipt; replay khác hash bị reject và audit.
 5. Event đến sai thứ tự giữ `pending_dependency`/gap marker, không bịa lịch sử. Mapping lô đối tác explicit, không gộp chỉ vì trùng tên/SKU.
 6. Trace summary đã xác thực lưu cục bộ theo chính sách chia sẻ để C truy xuất được A→B→C khi A tạm offline. Forward impact từ A cần thêm downstream summary C→B→A theo policy hoặc đánh dấu gap; upstream-only propagation không đủ để A biết C. Kết quả hiển thị verified/partner-asserted/missing, không tự khẳng định chứng nhận GS1/EPCIS.
@@ -53,15 +58,16 @@ Ví dụ A→B chỉ định hình contract, không phải payload được phé
 ## 4. State machines cần khóa trước code
 
 ```text
-M03 document: Draft -> PendingApproval? -> Approved? -> Confirmed | Cancelled
-Partner transfer: Confirmed -> AwaitingTechnicalAck -> AwaitingBusinessReceipt
-                 -> Received | PartiallyReceived | Disputed
+GoodsIssue: draft -> pending_approval -> approved -> confirmed | rejected | cancelled
+Receipt/Transfer/Receiving/Stocktake/Sale: draft -> confirmed | cancelled
+Transfer delivery_state: pending -> technical_ack -> awaiting_receipt
+                 -> received | partial | disputed
 Outbox: pending -> leased -> delivered | retry_due | dead_letter
-Inbox: received -> validated -> applied_to_trace | pending_dependency | rejected
+Inbox: validated -> applied_to_trace | pending_dependency | rejected
 Batch quality: available | restricted | inspect (chỉ action hợp lệ)
 ```
 
-`PendingApproval/Approved` chỉ áp dụng cho loại phiếu chọn ở D06. Không cho Flowable tự xác nhận tồn nếu người dùng chưa thực hiện action business `confirm`. Mọi trạng thái có người/nguồn, thời điểm, lý do và test transition bất hợp lệ.
+`pending_approval/approved` chỉ áp dụng GoodsIssue v1. Reject/cancel sau submit hủy/cách ly process, không dùng approval cũ để confirm; Draft mới sau reject phải có document ID mới theo `workflow-spec-v1.md`. Flowable không tự xác nhận tồn nếu người dùng chưa thực hiện business `confirm`. Mọi transition có người/nguồn, thời điểm, lý do và test bất hợp lệ.
 
 ## 5. Bộ test tối thiểu
 

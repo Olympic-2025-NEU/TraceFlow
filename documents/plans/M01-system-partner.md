@@ -38,14 +38,14 @@ Folder: `contexts/system/`.
 ## 5. API bề mặt (dự kiến)
 
 - `GET/PATCH /api/v1/organization`
-- `GET/POST /api/v1/users`
+- `GET/POST /api/v1/members`, `PATCH /api/v1/members/{id}` (membership map Keycloak `sub`; không lưu password)
 - `GET/POST/PATCH /api/v1/partners`
-- `GET/POST/PATCH /api/v1/partners/{id}/connection`
+- `PUT /api/v1/partners/{id}/connection` (inbound client mapping và outbound token endpoint/client/secret reference tách chiều)
 
 ## 6. UI bề mặt
 
 - Hồ sơ doanh nghiệp
-- Danh sách user / gán vai Administrator|Staff
+- Danh sách member / gán vai Administrator|Staff|Approver|Viewer; warehouse scope qua FK join ở P06
 - Danh sách partner + form kết nối (URL, client credentials)
 
 ## 7. Kiểm thử tối thiểu

@@ -34,13 +34,13 @@ AI gọi tool = API đã phân quyền của user hiện tại.
 ## 4. Aggregate / sự kiện chính
 
 - Không aggregate ERP mới bắt buộc
-- `AiSession` / `AiToolCall` (audit) nếu cần truy vết
+- Tool-call audit dùng `platform.audit_log` action `ai.tool.*`; MVP không bắt buộc bảng AI mới
 - Risk rules: hết hạn, lệch số lượng receiving (rule-first; AI giải thích)
 
 ## 5. API bề mặt (dự kiến)
 
 - `POST /api/v1/ai/chat` (hoặc service Python riêng được Next proxy)
-- Tools nội bộ: `getLot`, `getLotHistory`, `createReceiptDraft`, `createIssueDraft`, `listExpiringBatches`
+- Tools nội bộ allowlist v1: `getLot`, `getStock`, `getTrace`, `createReceiptDraft`, `createIssueDraft`; rule hết hạn chạy deterministic trên dữ liệu M02, không có SQL/tool tự do
 
 ## 6. UI bề mặt
 

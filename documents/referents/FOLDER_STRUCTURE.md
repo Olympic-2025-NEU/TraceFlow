@@ -31,8 +31,11 @@ nexora/
   services/
     core-data/               # API metadata/projection và file headless, không UI
     ai/                     # AI01 — tool-calling service
+  workers/                  # Outbox, Flowable bridge, trace/federation/archive; process riêng
   composition/              # Wire ports, event handlers giữa contexts
   db/migrations/
+  contracts/                # OpenAPI, JSON Schema event/core-record, fixtures versioned
+  tests/                    # Integration/e2e, gateway/auth, security và failure tests
   deploy/                   # Cấu hình lõi headless và multi-instance demo A/B/C (đích)
   documents/
     referents/
@@ -69,12 +72,12 @@ contexts/<name>/
 
 | Schema | Nội dung |
 | --- | --- |
-| `platform` | Audit, outbox, idempotency, attachment metadata |
+| `platform` | Audit, outbox, idempotency, attachment metadata, core_record, approval_request |
 | `system` | Organization, membership, partner, connection |
 | `catalog` | Product, identifier, batch |
 | `inventory` | Warehouse, balance, movement |
-| `trading` | Receipt, issue, transfer, stocktake, sale record |
-| `traceability` | Trace event, links, QR token |
+| `trading` | Document/line chung với sáu document_type, transfer/receiving/sale detail |
+| `traceability` | Trace event, links, QR token, quality issue (P12) |
 | `federation` | Outbound/inbound message, ack, mapping |
 
 Một instance một database. Không dùng `tenant_id` SaaS đa tổ chức trên cùng DB.

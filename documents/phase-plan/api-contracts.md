@@ -1,14 +1,14 @@
 # API contract đề xuất để chốt ở P00
 
-Đây là **bề mặt API mục tiêu**, chưa tồn tại. Giữ `/api/v1`, OpenAPI versioned, JSON UTF-8, thời gian ISO 8601 UTC, ID opaque; không trả nguyên stack trace. Contract ở đây phải được sửa cùng test và client khi ADR thay đổi. Next Route Handler là adapter HTTP, use case/domain ở context.
+Đây là **bề mặt API mục tiêu**, chưa tồn tại. Route và DTO/response/error chi tiết v1 ở [api-payloads-v1.md](./api-payloads-v1.md); file OpenAPI thực phải sinh ở P00/P02. Giữ `/api/v1`, JSON UTF-8, thời gian ISO 8601 UTC, ID opaque; không trả nguyên stack trace. Contract ở đây phải được sửa cùng test và client khi ADR thay đổi. Next Route Handler là adapter HTTP, use case/domain ở context.
 
 ## 1. Quy tắc chung
 
 - Private user API: OIDC/session qua gateway + xác thực lại ở app, role/scope và row-level checks. Federation API: token service account riêng, partner binding. Public passport: route allowlist, rate limit và projection public.
 - Lệnh ghi cần `Idempotency-Key` ở confirm/transfer/receiving và các POST có hậu quả không lặp; lưu key cùng payload hash trong DB. Tạo Draft có thể dùng key để chống double-click.
-- `POST /.../{id}/confirm`, `cancel`, `approve` là action rõ; không nhận `PATCH status`. `If-Match`/version hoặc optimistic check chống lost update.
+- `POST /.../{id}/confirm`, `cancel`, `submit` và `/approvals/{id}/decision` là action rõ; không nhận `PATCH status`. `If-Match`/version chống lost update; decision trả pending cho tới khi Flowable đối soát.
 - Response lỗi có `code`, `message`, `requestId`, `details` an toàn. 400 malformed, 401 unauthenticated, 403 forbidden, 404 không thấy/không được tiết lộ, 409 conflict/idempotency/version/stock, 422 invalid domain, 429 throttled, 503 dependency unavailable.
-- Paginate mọi list (`cursor` hoặc page/limit chốt D03); sort/filter allowlist, limit max; OpenAPI ghi scope, field public và ví dụ lỗi.
+- Paginate mọi list bằng opaque cursor, `limit` mặc định 20/tối đa 100 theo baseline; sort/filter allowlist. OpenAPI ghi scope, field public và ví dụ lỗi.
 - Gateway route matrix là một phần contract: `/api/v1/public/*` anonymous allowlist; `/api/v1/federation/*` M2M; `/api/v1/*` user/private; health nội bộ chỉ lộ trạng thái tổng quát. Không public Flowable/admin/PG/Redis/storage.
 
 ## 2. Bề mặt theo module

@@ -49,7 +49,7 @@ flowchart LR
 ## Kịch bản demo xuyên module (A → B → C)
 
 1. M01: ba instance, partner connection A–B và B–C.
-2. M02: A tạo product + lot + tồn.
-3. M03: A xuất (Partner Transfer); B Receiving Confirmation; B xuất cho C; C ghi Sale Record.
+2. M02: A tạo product + lot + warehouse, batch từ `inspect` sang `available`; không seed balance bằng SQL.
+3. M03: A GoodsReceipt 20 → GoodsIssue 12 được Flowable duyệt → PartnerTransfer; B Receiving Confirmation actual 10 → GoodsIssue 6 được duyệt → transfer C; C nhận 6 → issue sale 2 được duyệt → SaleRecord.
 4. M04: sự kiện federation + QR passport xuyên chuỗi.
 5. AI01: hỏi lịch sử lô; tạo draft phiếu trên một instance.

@@ -16,7 +16,7 @@
 
 Folder: `contexts/trading/`.
 
-Trạng thái cơ bản: `Draft → Confirmed | Cancelled`. Giao dịch liên doanh nghiệp có thể thêm chờ xác nhận tiếp nhận / sai lệch.
+Trạng thái cơ bản: `Draft → Confirmed | Cancelled`; riêng GoodsIssue v1 đi qua `pending_approval → approved/rejected` bằng Flowable trước confirm. Delivery state của PartnerTransfer tách khỏi document status, có technical ACK/receipt/dispute.
 
 ## 2. Ngoài phạm vi
 
@@ -32,7 +32,7 @@ Trạng thái cơ bản: `Draft → Confirmed | Cancelled`. Giao dịch liên do
 | Cung cấp M04 | Khi confirm: outbox sự kiện truy xuất / federation |
 | Cung cấp AI01 | Tạo draft phiếu nhập/xuất/kiểm kê |
 
-Confirm phiếu → gọi Inventory port → ghi outbox (không SQL tồn trực tiếp).
+Confirm phiếu **sở hữu movement** (GoodsReceipt+, GoodsIssue−, ReceivingConfirmation+actual, Stocktake±variance) → gọi Inventory port trong cùng PG transaction → ghi audit/outbox. PartnerTransfer/SaleRecord chỉ link issue đã confirm, không trừ tồn lần hai.
 
 ## 4. Aggregate / sự kiện chính
 
@@ -43,7 +43,7 @@ Confirm phiếu → gọi Inventory port → ghi outbox (không SQL tồn trực
 ## 5. API bề mặt (dự kiến)
 
 - `POST/GET /api/v1/receipts`, `.../confirm`
-- `POST/GET /api/v1/issues`, `.../confirm`
+- `POST/GET /api/v1/issues`, `.../submit`, `.../confirm`; `POST /api/v1/approvals/{id}/decision`
 - `POST/GET /api/v1/transfers`, `.../confirm`
 - `POST/GET /api/v1/receivings`, `.../confirm`
 - `POST/GET /api/v1/stocktakes`, `.../confirm`
@@ -61,7 +61,7 @@ Confirm phiếu → gọi Inventory port → ghi outbox (không SQL tồn trực
 
 - Unit: confirm sai trạng thái bị từ chối; draft không đổi tồn
 - Integration: confirm receipt tăng tồn + outbox
-- Workflow mẫu (AC-12): một chứng từ đi qua phê duyệt Flowable trước confirm (do DevOps chọn loại phiếu)
+- Workflow mẫu (AC-12): mọi GoodsIssue v1 đi qua phê duyệt Flowable bởi Approver khác creator trước confirm
 
 ## 8. Tiêu chí Done
 

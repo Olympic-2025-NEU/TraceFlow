@@ -49,7 +49,7 @@ Nguyên tắc: nhận message federation ≠ đã nhận đủ hàng (cần NX-T
 
 - `TraceEvent`, `TraceLink`, `QrToken`, `PassportView`
 - `FederationMessage`, `MessageAck`, `IdentityMapping`
-- Inbound/outbound topics: `record.transfer`, `record.receipt`, … (tên cụ thể DevOps chốt trong contract)
+- Federation event v1: `transfer.announced.v1`, `receipt.confirmed.v1`, `downstream.impact.v1`; envelope/ACK ở `../phase-plan/event-payloads-v1.md`
 
 ## 5. API bề mặt (dự kiến)
 
@@ -64,7 +64,7 @@ Nội bộ:
 Federation:
 
 - `POST /api/v1/federation/events` (inbound)
-- `POST /api/v1/federation/events/{id}/ack`
+- Technical ACK `202 {messageId,ackId,acceptedAt,status}` **trong response** của inbound; không cần POST ACK riêng. Business receipt là event độc lập sau Staff confirm.
 - Admin: retry queue, mapping product/lot
 
 ## 6. UI bề mặt

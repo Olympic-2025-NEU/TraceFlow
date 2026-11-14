@@ -7,7 +7,7 @@
 | Mã | Chức năng |
 | --- | --- |
 | NX-PROD-01 | Product Management |
-| NX-PROD-02 | Product Identifier (SKU, barcode) |
+| NX-PROD-02 | Product Identifier (SKU ở Product; EAN-13/internal barcode ở bảng identifier) |
 | NX-PROD-03 | Batch/Lot Management |
 | NX-PROD-04 | Batch Information (NSX, HSD, nguồn lô) |
 | NX-INV-01 | Warehouse |
@@ -42,9 +42,9 @@ Nguyên tắc: số lượng tồn chỉ đổi từ giao dịch hợp lệ (do 
 
 ## 5. API bề mặt (dự kiến)
 
-- `CRUD /api/v1/products`, identifiers
-- `CRUD /api/v1/batches`
-- `CRUD /api/v1/warehouses`
+- `GET/POST/PATCH /api/v1/products`, `POST /api/v1/products/{id}/identifiers`; không DELETE có history
+- `GET/POST /api/v1/batches`, `POST /api/v1/batches/{id}/quality-actions`; batch partner chỉ service verified inbox tạo
+- `GET/POST /api/v1/warehouses`; archive theo policy, không DELETE có balance/history
 - `GET /api/v1/inventory/balances`
 - `GET /api/v1/inventory/movements`
 - Port nội bộ: `adjustStock`, `assertAvailable`
@@ -58,7 +58,7 @@ Nguyên tắc: số lượng tồn chỉ đổi từ giao dịch hợp lệ (do 
 
 ## 7. Kiểm thử tối thiểu
 
-- Unit: không cho tồn âm nếu rule cấm; batch status chặn xuất khi restricted
+- Unit: v1 luôn cấm tồn âm; batch status `restricted/inspect` và hết hạn chặn xuất
 - Integration: movement ghi history
 - API: validation SKU/lot uniqueness trong instance
 
