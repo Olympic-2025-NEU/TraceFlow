@@ -5,7 +5,8 @@
 | Instance | Một bản triển khai Nexora độc lập của một doanh nghiệp |
 | Self-hosted | Doanh nghiệp tự vận hành trên hạ tầng của mình |
 | Modular Monolith | Một ứng dụng deploy, tách module/bounded context rõ trong code |
-| Platform / DX-OS | Lớp hạ tầng dùng chung: identity, audit, workflow, outbox, files |
+| Lõi DX-OS headless | Dịch vụ nền không có UI: Identity/SSO, API Gateway, dữ liệu cấu trúc/phi cấu trúc, Workflow |
+| `platform/` | Ports/adapters TypeScript dùng chung của ứng dụng Nexora để tích hợp dịch vụ lõi; không phải toàn bộ lõi DX-OS |
 | Partner | Doanh nghiệp đối tác trong chuỗi; có thể có instance Nexora riêng |
 | Partner Connection | Cấu hình xác thực và endpoint để trao đổi với instance đối tác |
 | Product | Danh mục hàng hóa / nguyên liệu trong catalog |

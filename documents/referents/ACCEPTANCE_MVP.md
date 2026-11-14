@@ -2,6 +2,8 @@
 
 Nguồn: Chương 6.10.
 
+Các AC bên dưới là tiêu chí nghiệp vụ của proposal. Điều kiện dự thi OLP 2026 áp dụng thêm: giấy phép nguồn mở hợp lệ, kho công khai, khả năng build từ source, lõi dịch vụ headless với SSO/API Gateway/dữ liệu cấu trúc và phi cấu trúc/Workflow, cùng ít nhất một ứng dụng minh họa H-P-D-I. Xem `OLP_2026_ALIGNMENT.md`; đạt AC-01…AC-13 chưa tự động đồng nghĩa đạt các yêu cầu đề thi.
+
 | Mã | Tiêu chí |
 | --- | --- |
 | AC-01 | Triển khai được ba bản Nexora độc lập, mỗi bản một DB |

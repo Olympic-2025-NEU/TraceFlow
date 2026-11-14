@@ -16,6 +16,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 2. `ARCHITECTURE.md`
 3. Module plan in `documents/plans/` for the feature you touch
 4. `documents/referents/CODING_RULES.md` and `FOLDER_STRUCTURE.md`
+5. `documents/referents/OLP_2026_ALIGNMENT.md` when planning contest readiness
+6. `documents/phase-plan/README.md` and the relevant phase when implementing MVP work
 
 ## MVP modules (Chapter 6)
 
@@ -29,6 +31,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 | AI01 | `documents/plans/AI01-ai-support.md` |
 
 Build order and edges: `documents/plans/DEPENDENCIES.md`.
+Detailed tasks and gates: `documents/phase-plan/README.md`.
 
 ## Skills
 
@@ -43,5 +46,7 @@ Use project skills under `.cursor/skills/` when relevant:
 
 - Self-hosted single-org per instance; not SaaS multi-tenant.
 - Stack: Next.js + TypeScript + PostgreSQL (Chapter 7.12) — not Laravel.
+- License: GNU AGPL v3 only (`AGPL-3.0-only`). Preserve the full `LICENSE`; add SPDX notices to authored source files before release.
+- Contest core: headless Identity/SSO, API Gateway, structured/unstructured data, and executable Workflow. The Next.js UI/API is the business application, not proof that the headless core exists.
 - Do not expand MVP with finance/CRM/full POS/production.
-- Target folders: `contexts/system|catalog|inventory|trading|traceability|federation`, `services/ai`. Legacy `sales|finance|procurement|master-data` scaffolds are not the standard.
+- Target folders: `contexts/system|catalog|inventory|trading|traceability|federation`, `services/core-data`, `services/ai`, `apps/dx-lab`. Legacy `sales|finance|procurement|master-data` scaffolds are not the standard.

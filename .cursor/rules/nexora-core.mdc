@@ -6,9 +6,12 @@ alwaysApply: true
 # Nexora core
 
 - Phạm vi MVP và module lấy theo **Chương 6**: M01, M02, M03, M04, AI01. Không thêm finance, CRM, POS đầy đủ, sản xuất, QC nhiều bước vào MVP.
-- Tech stack lấy theo **Chương 7 §7.12**: Next.js Modular Monolith, React, TypeScript, Tailwind, PostgreSQL, Keycloak, Flowable, Redis, object storage, Python/LLM cho AI.
+- Ràng buộc đề thi/thể lệ OLP 2026 được ưu tiên trước tài liệu nội bộ: lõi headless phải có SSO, API Gateway, dữ liệu cấu trúc/phi cấu trúc và Workflow; ứng dụng minh họa thuộc H-P-D-I tiêu thụ dịch vụ lõi. Bảng công nghệ của đề là ví dụ tham chiếu.
+- Tech stack Nexora lấy theo **Chương 7 §7.12**: Next.js Modular Monolith, React, TypeScript, Tailwind, PostgreSQL, Keycloak, API Gateway nguồn mở, Flowable, Redis, object storage S3-compatible, Python/LLM cho AI.
+- Dự án áp dụng GNU AGPL v3 only (`AGPL-3.0-only`). Giữ toàn văn `LICENSE`; thông báo SPDX từng tệp mã là việc cần hoàn tất trước release.
 - Triển khai **self-hosted**: một instance = một doanh nghiệp = một PostgreSQL. Không thiết kế SaaS multi-tenant tập trung.
 - Trước khi code module: đọc `documents/plans/<module>.md` + `documents/referents/CODING_RULES.md` + `documents/referents/FOLDER_STRUCTURE.md`.
 - Thứ tự ưu tiên tài liệu: `documents/referents/SOURCE_OF_TRUTH.md`.
+- Hiện trạng và khoảng trống trước khi lập plan: `documents/referents/OLP_2026_ALIGNMENT.md`. Không gọi interface hoặc scaffold là dịch vụ đã hoạt động.
 - Scaffold cũ `contexts/sales|finance|procurement|master-data` không còn chuẩn; cấu trúc đích là system/catalog/inventory/trading/traceability/federation.
 - AI chỉ tạo Draft; không tự confirm. Federation nhận message ≠ đã nhận đủ hàng.

@@ -1,5 +1,7 @@
 # Phụ thuộc và thứ tự xây dựng module
 
+Task nhỏ, phase gate và ma trận nghiệm thu nằm trong [documents/phase-plan/README.md](../phase-plan/README.md). Tài liệu này giữ quan hệ phụ thuộc ở cấp module.
+
 ```mermaid
 flowchart LR
   Platform["Platform_DXOS"]

@@ -2,6 +2,7 @@
 
 ```text
 nexora/
+  apps/dx-lab/              # Frontend H-P-D-I tầng 2, runtime riêng (đích)
   app/
     api/v1/                 # Route handler mỏng — adapter HTTP
     (workspace)/            # ERP UI (Staff / Admin)
@@ -10,7 +11,7 @@ nexora/
   components/
     shell/                  # Khung layout Tailwind
     ui/                     # Primitive UI (shadcn khi dùng)
-  platform/                 # Lõi DX-OS dùng chung
+  platform/                 # Ports/adapters dùng chung để tích hợp lõi DX-OS headless
     kernel/
     identity/
     access/
@@ -28,17 +29,23 @@ nexora/
     traceability/           # M04 — events, QR, passport
     federation/             # M04 — exchange với instance đối tác
   services/
+    core-data/               # API metadata/projection và file headless, không UI
     ai/                     # AI01 — tool-calling service
   composition/              # Wire ports, event handlers giữa contexts
   db/migrations/
-  deploy/                   # Docker Compose, multi-instance demo A/B/C
+  deploy/                   # Cấu hình lõi headless và multi-instance demo A/B/C (đích)
   documents/
     referents/
     plans/
+    phase-plan/              # Task/gate thực thi Phase 00–13 (đích kế hoạch)
     nexora/                 # Đề xuất gốc
   ARCHITECTURE.md
   AGENTS.md
+  CHANGELOG.md
+  LICENSE                   # GNU AGPL v3 only
 ```
+
+Lõi headless là các dịch vụ triển khai và API của chúng (Identity/SSO, API Gateway, core data/file API cho dữ liệu có/không cấu trúc, Workflow). `services/core-data/` là runtime không UI; nó cung cấp metadata/projection và file có quyền, không sở hữu transaction chứng từ/tồn của ERP. `apps/dx-lab/` là frontend tầng 2 khác runtime Nexora ERP. Thư mục `platform/` chứa hợp đồng và adapter TypeScript để ứng dụng Nexora sử dụng các dịch vụ đó; không đại diện cho toàn bộ PaaS đã triển khai. Hiện `deploy/` mới có PostgreSQL.
 
 ## Luật import
 

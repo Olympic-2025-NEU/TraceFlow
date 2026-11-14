@@ -7,12 +7,13 @@
 Cung cấp lớp dùng chung cho mọi module nghiệp vụ:
 
 - Identity / Actor từ Keycloak (OIDC)
+- API Gateway headless để định tuyến, bảo vệ và kiểm soát API được công bố
 - Access control cơ bản (Administrator, Staff)
 - Audit logging
 - Outbox + background dispatch
 - Idempotency
 - File metadata + object storage port
-- Workflow port (Flowable) cho một quy trình phê duyệt mẫu (AC-12)
+- Workflow engine Flowable và port tích hợp cho một quy trình phê duyệt mẫu (AC-12)
 - Persistence / transaction biên
 - HTTP command pipeline
 
@@ -21,7 +22,6 @@ Tham chiếu Chương 6.8 và 7.11–7.12.
 ## 2. Ngoài phạm vi
 
 - Phân quyền động phức tạp, ABAC đầy đủ
-- API Gateway sản phẩm riêng nếu biên Next.js + Keycloak đủ cho MVP (có thể thêm sau)
 - Workflow Designer / builder
 - Multi-tenant SaaS trên một DB
 
@@ -29,8 +29,8 @@ Tham chiếu Chương 6.8 và 7.11–7.12.
 
 | Hướng | Nội dung |
 | --- | --- |
-| Phụ thuộc | PostgreSQL, Redis (queue/cache), Keycloak, object storage, Flowable |
-| Cung cấp | Actor, Transaction, Outbox, AuditRecorder, FileStore, Workflow, command pipeline |
+| Phụ thuộc | PostgreSQL, Redis (queue/cache), Keycloak, API Gateway, object storage, Flowable |
+| Cung cấp | Actor, Transaction, Outbox, AuditRecorder, FileStore, Workflow, command pipeline và API được bảo vệ qua gateway |
 
 Không phụ thuộc module M01–M04.
 
@@ -58,10 +58,11 @@ Không UI nghiệp vụ. Có thể có trang health/status trong console sau.
 ## 8. Tiêu chí Done
 
 - [ ] AC-01 hỗ trợ (nền để chạy nhiều instance)
-- [ ] AC-12: port Workflow gắn được một quy trình mẫu
+- [ ] Lõi dịch vụ headless có thể phục vụ ứng dụng Nexora qua API: SSO, gateway, dữ liệu cấu trúc/phi cấu trúc và workflow
+- [ ] AC-12: Flowable thực thi được một quy trình mẫu; state machine TypeScript đơn lẻ không đủ
 - [ ] AC-13: `deploy/` + `.env.example` + README cài đặt nền
 - [ ] Referent `CODING_RULES.md` được hiện thực tối thiểu trong `platform/`
 
 ## 9. Ghi chú DevOps
 
-Chi tiết hóa: phiên bản image, secret management, retention outbox, cấu hình Flowable realm/process definition, chiến lược migrate `platform` schema.
+Chi tiết hóa: chọn gateway nguồn mở, phiên bản image, secret management, retention outbox, cấu hình Keycloak/Flowable và process definition, object storage tự host tương thích S3, chiến lược migrate `platform` schema. Compose hiện chỉ có PostgreSQL; các checkbox trên chưa đạt.

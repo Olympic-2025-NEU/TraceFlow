@@ -2,11 +2,11 @@
 
 **Nền tảng ERP nguồn mở tích hợp truy xuất nguồn gốc và liên thông chuỗi cung ứng theo kiến trúc phân tán.**
 
-Nexora giúp doanh nghiệp quản lý sản phẩm, lô hàng, tồn kho và chứng từ nhập–xuất–chuyển giao trên hạ tầng tự vận hành (self-hosted), đồng thời trao đổi sự kiện truy xuất với đối tác qua API federation — mỗi bên giữ database riêng, không phụ thuộc một nền tảng SaaS tập trung.
+Nexora được thiết kế để giúp doanh nghiệp quản lý sản phẩm, lô hàng, tồn kho và chứng từ nhập–xuất–chuyển giao trên hạ tầng tự vận hành (self-hosted), đồng thời trao đổi sự kiện truy xuất với đối tác qua API federation — mỗi bên giữ database riêng, không phụ thuộc một nền tảng SaaS tập trung.
 
-Người tiêu dùng có thể tra cứu nguồn gốc được phép công bố qua mã QR / Product Passport. AI hỗ trợ tra cứu và tạo chứng từ dự thảo; xác nhận nghiệp vụ vẫn do con người thực hiện.
+Trong MVP đích, người tiêu dùng sẽ tra cứu nguồn gốc được phép công bố qua mã QR / Product Passport. AI sẽ hỗ trợ tra cứu và tạo chứng từ dự thảo; xác nhận nghiệp vụ vẫn do con người thực hiện.
 
-> Phạm vi chức năng MVP lấy theo **Chương 6** đề xuất. Tech stack lấy theo **Chương 7 §7.12**.
+> Ràng buộc dự thi lấy theo đề thi/thể lệ OLP PMNM 2026. Phạm vi chức năng MVP lấy theo **Chương 6** đề xuất; tech stack Nexora lấy theo **Chương 7 §7.12**. Đây là kiến trúc đích, chưa phải danh sách tính năng đã chạy.
 
 ## Vì sao Nexora
 
@@ -23,7 +23,7 @@ Người tiêu dùng có thể tra cứu nguồn gốc được phép công bố
 
 | Mã | Module | Nội dung chính |
 | --- | --- | --- |
-| Platform | DX-OS shared | Định danh, quyền, audit, workflow, outbox, tệp |
+| Platform | DX-OS headless + adapter dùng chung | SSO, API Gateway, dữ liệu cấu trúc/phi cấu trúc, Workflow; quyền, audit, outbox |
 | M01 | System & Partner | Hồ sơ doanh nghiệp, user, đối tác, kết nối instance |
 | M02 | Product & Inventory | Sản phẩm, SKU/barcode, lô, kho, tồn, lịch sử biến động |
 | M03 | Trading & Distribution | Phiếu nhập/xuất, chuyển giao, xác nhận nhận hàng, kiểm kê, ghi nhận bán theo lô |
@@ -48,21 +48,22 @@ Kế toán/công nợ, CRM, POS đầy đủ, sản xuất/BOM, QC nhiều bư�
 
 - **Self-hosted, single-tenant theo instance:** một doanh nghiệp = một bản cài = một PostgreSQL.
 - **Modular Monolith (Next.js):** UI App Router + API Route Handlers trong cùng ứng dụng.
-- **DDD:** nghiệp vụ trong `contexts/`; hạ tầng dùng chung trong `platform/`; AI trong `services/ai/`.
+- **Lõi DX-OS headless:** SSO, API Gateway, core data/file API không UI, dữ liệu và Workflow cung cấp dịch vụ qua API cho ứng dụng; DX-Lab H-P-D-I là frontend tầng 2 triển khai riêng.
+- **DDD:** nghiệp vụ trong `contexts/`; ports/adapters dùng chung trong `platform/`; AI trong `services/ai/`.
 - **Confirm chứng từ:** một giao dịch ghi aggregate + tồn (qua port Inventory) + outbox + audit.
 - **Federation:** nhận message kỹ thuật ≠ đã nhận đủ hàng (cần Receiving Confirmation).
 
 Chi tiết: [ARCHITECTURE.md](./ARCHITECTURE.md).
 
-## Tech stack
+## Tech stack đích
 
 | Lớp | Công nghệ |
 | --- | --- |
 | Giao diện | Next.js, React, TypeScript, Tailwind CSS, shadcn/ui |
-| Định danh | Keycloak (OIDC/SSO) |
+| Biên & định danh | API Gateway nguồn mở, Keycloak (OIDC/SSO), HTTPS |
 | Nghiệp vụ & dữ liệu | Next.js Modular Monolith, DDD, PostgreSQL |
 | Quy trình & CI/CD | Flowable, GitHub Actions, Docker Compose |
-| Hàng đợi & tệp | Redis, object storage tương thích S3/R2 |
+| Hàng đợi & tệp | Redis, object storage tương thích S3; ưu tiên tự host cho demo |
 | AI | Python, REST, LLM (tool-calling qua API đã phân quyền) |
 | Quan sát | OpenAPI, Prometheus, Grafana |
 
@@ -70,9 +71,11 @@ Chi tiết: [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ```text
 nexora/
+  apps/dx-lab/          # Ứng dụng H-P-D-I tầng 2 (đích)
   app/                  # UI + API adapters
-  platform/             # Lõi DX-OS dùng chung
+  platform/             # Ports/adapters tích hợp lõi DX-OS headless
   contexts/             # M01–M04 (system, catalog, inventory, trading, …)
+  services/core-data/   # API dữ liệu/tệp headless (đích)
   services/ai/          # AI01
   composition/          # Wire ports giữa contexts
   db/migrations/        # Schema PostgreSQL
@@ -80,6 +83,7 @@ nexora/
   documents/
     referents/          # Luật & nguồn chân lý cho Agent/DevOps
     plans/              # Plan tổng quan theo module
+    phase-plan/         # Task chi tiết theo phase, gate và test matrix
     nexora/             # Đề xuất dự án
 ```
 
@@ -91,8 +95,11 @@ Luật import và schema: [documents/referents/FOLDER_STRUCTURE.md](./documents/
 | --- | --- |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Kiến trúc tổng thể |
 | [AGENTS.md](./AGENTS.md) | Hướng dẫn AI Agent khi code |
+| [CHANGELOG.md](./CHANGELOG.md) | Lịch sử thay đổi và trạng thái release |
 | [documents/referents/](./documents/referents/) | Nguồn chân lý, catalog module, coding rules, glossary, AC |
+| [documents/referents/OLP_2026_ALIGNMENT.md](./documents/referents/OLP_2026_ALIGNMENT.md) | Ràng buộc đề thi và hiện trạng chưa triển khai |
 | [documents/plans/](./documents/plans/) | Plan triển khai từng module |
+| [documents/phase-plan/](./documents/phase-plan/) | Kế hoạch thực thi chi tiết Phase 00–13, contract, fixture và gate nghiệm thu |
 | [documents/nexora/Nexora - NEU.OPUS5.5.md](./documents/nexora/Nexora%20-%20NEU.OPUS5.5.md) | Đề xuất đầy đủ (Chương 6 = MVP, Chương 7 = kiến trúc/stack) |
 | [.cursor/rules/](./.cursor/rules/) · [.cursor/skills/](./.cursor/skills/) | Rules & skills cho Cursor Agent |
 
@@ -106,7 +113,7 @@ Tiêu chí nghiệm thu MVP (AC-01…AC-13): [documents/referents/ACCEPTANCE_MVP
 - npm
 - Docker (cho PostgreSQL cục bộ)
 
-### Chạy giao diện
+### Chạy scaffold giao diện
 
 ```bash
 npm install
@@ -123,7 +130,7 @@ docker compose -f deploy/docker-compose.yml up -d
 ```
 
 - `deploy/.env` chỉ dùng máy dev — không commit secret.
-- Migration nền: `db/migrations/0001_platform.sql` (nạp khi volume Postgres còn trống).
+- `db/migrations/0001_platform.sql` hiện rỗng; Compose chỉ khởi động PostgreSQL, chưa khởi động app hoặc lõi DX-OS.
 
 ### Scripts
 
@@ -136,8 +143,8 @@ docker compose -f deploy/docker-compose.yml up -d
 
 ## Trạng thái hiện tại
 
-Repo đang ở giai đoạn **định hướng kiến trúc + tài liệu Agent/plan module**. Nghiệp vụ M01–M04 và AI01 sẽ được triển khai theo plan trong `documents/plans/`; DevOps bổ sung chi tiết hệ thống, UI, kiểm thử và kết nối trước khi code sâu từng module.
+Repo đang ở giai đoạn **scaffold Next.js + định hướng kiến trúc + tài liệu Agent/plan module**. Trang chủ vẫn là trang mặc định; API health trả trạng thái tĩnh; các context cũ `sales`, `procurement`, `finance`, `master-data` không thuộc cấu trúc MVP đích. Chưa có triển khai M01–M04, AI01, Keycloak, API Gateway, Flowable, object storage hoặc demo ba instance. Bảng chênh lệch để lập plan nằm trong [OLP_2026_ALIGNMENT.md](./documents/referents/OLP_2026_ALIGNMENT.md).
 
 ## Giấy phép
 
-Định hướng phân phối nguồn mở (chi tiết giấy phép sẽ được công bố cùng bản phát hành dự thi / release chính thức).
+Dự án áp dụng **GNU Affero General Public License v3.0 only** (`AGPL-3.0-only`); xem [LICENSE](./LICENSE). `private: true` trong `package.json` chỉ ngăn phát hành gói npm, không xác nhận quyền truy cập công khai của kho Git. Trước release, nhóm cần gắn thông báo SPDX trên từng tệp mã tự viết, kiểm tra quyền phát hành và giấy phép của thành phần bên thứ ba, và cung cấp cách lấy mã nguồn tương ứng cho người sử dụng qua mạng.

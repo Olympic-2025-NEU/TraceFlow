@@ -4,7 +4,7 @@ Nguồn: Chương 6 đề xuất Nexora.
 
 | Mã | Module | Folder đích | Vai trò |
 | --- | --- | --- | --- |
-| Platform | DX-OS shared | `platform/` | Identity, access, audit, workflow, outbox, files, persistence |
+| Platform | DX-OS headless + adapter dùng chung | `platform/`, `deploy/` (đích) | SSO, API Gateway, dữ liệu cấu trúc/phi cấu trúc, Workflow; access, audit, outbox, files, persistence |
 | M01 | System & Partner Management | `contexts/system/` | Tổ chức, user, partner, kết nối instance |
 | M02 | Product & Inventory Management | `contexts/catalog/`, `contexts/inventory/` | Sản phẩm, lô, kho, tồn |
 | M03 | Trading & Distribution | `contexts/trading/` | Nhập, xuất, chuyển giao, kiểm kê, ghi nhận bán |
@@ -74,4 +74,4 @@ Nguồn: Chương 6 đề xuất Nexora.
 
 ## Thành phần dùng chung (Chương 6.8)
 
-Identity/SSO, API Gateway (hoặc biên Next.js + Keycloak), Workflow, PostgreSQL, File Storage, Background Processing, Audit Logging.
+Identity/SSO, API Gateway headless, Workflow engine, PostgreSQL, File Storage, Background Processing, Audit Logging. Next.js + Keycloak không tự thay thế yêu cầu API Gateway trong đề thi.

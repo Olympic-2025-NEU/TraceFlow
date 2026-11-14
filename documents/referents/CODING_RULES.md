@@ -1,5 +1,11 @@
 # Quy tắc coding Nexora
 
+## Giấy phép và ranh giới lõi
+
+- Tệp mã do nhóm viết phải có thông báo `SPDX-License-Identifier: AGPL-3.0-only`; giữ toàn văn giấy phép trong `LICENSE`. Kiểm tra quyền và giấy phép của mã/tài sản bên thứ ba trước khi đưa vào repo.
+- API Gateway, Identity/SSO, dữ liệu cấu trúc/phi cấu trúc và Workflow là năng lực của lõi headless. Route Handler Next.js và interface trong `platform/` không tự chứng minh các dịch vụ này đã hoạt động.
+- Mọi API công bố cho ứng dụng và federation phải có đường đi và chính sách truy cập qua gateway được chốt trong plan triển khai.
+
 ## Pipeline lệnh ghi
 
 Thứ tự bắt buộc trong route/application handler:
