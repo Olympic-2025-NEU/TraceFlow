@@ -50,3 +50,17 @@
 - [ ] Hai người review ranh giới core headless/Next ERP/DX-Lab app, D01–D08/D14/D15 và ma trận AC; ghi rủi ro còn mở có owner.
 - [ ] Chạy lại baseline, kiểm tra bản tài liệu và mã không claim sai trạng thái. Phase 01 chỉ mở khi có lựa chọn gateway/storage/DB adapter xác định và demo topology khả thi.
 - **Bằng chứng:** ADR, baseline log, scope/contract v1, license inventory.
+
+## Hồ sơ giao AI theo từng task
+
+Đọc `implementation-baseline.md` trước khi giao các task. Các path là đầu ra đích, chưa có trong scaffold.
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P00-T01 | `documents/phase-plan/evidence/baseline.md` ghi commit, Node/npm/Docker version, file tree, `package.json`, route/migration/Compose hiện hữu, code legacy; log `npm ci`, `npm run lint`, `npm run build`, `docker compose -f deploy/docker-compose.yml config`. | Báo đúng migration 0 byte, Compose chỉ PG, health tĩnh, không gắn dấu Done cho M01–M04. Không sửa source trong task kiểm kê. |
+| P00-T02 | `documents/phase-plan/scope-v1.md`: từng AC-01…13, yêu cầu đề thi §3–4, ngoài MVP, hành trình A→B→C theo `demo-fixtures.md`; ghi mốc nộp do BTC xác nhận hoặc blocker có owner. | Reviewer đối chiếu `test-matrix.md`/`contest-scorecard.md`; không có finance/POS/production lọt MVP. |
+| P00-T03 | `documents/adr/0001-*.md`… cho D01–D15; spike mini Compose APISIX↔Keycloak, SeaweedFS upload/restore, PG rollback, Flowable task, core API không UI. Ghi image tag/digest/license/RAM. | Mỗi ADR có phương án, phép thử, kết quả, quyết định và ảnh hưởng contract; D03 chọn `pg` + SQL, D07 numeric(20,3) hoặc sửa blueprint khi spike bác bỏ. |
+| P00-T04 | `LICENSE`, SPDX inventory từng source file, `NOTICE` nếu cần, `CHANGELOG.md`, public repo/issue tracker URL, secret/license scan config. | Mỗi tệp mã do nhóm viết có SPDX; full AGPL text; dependency/tài sản có provenance; không commit secret. |
+| P00-T05 | `database-schema-v1.md`, `api-payloads-v1.md`, `event-payloads-v1.md`, `workflow-spec-v1.md` chốt version 1; tạo `contracts/openapi/`, `contracts/events/` với schema/fixtures A→B. | AC và ADR đồng nhất: một owner stock movement, issuer-qualified lot, technical ACK≠receiving, public allowlist; contract parse/validate pass. |
+| P00-T06 | `.github/workflows/ci.yml`, scripts `typecheck/test/db:migrate` trong `package.json`, `deploy/.env.example`, mapping scaffold cũ→contexts đích. | CI chạy trên clone sạch; cố ý sai lint/typecheck thì fail; script `test` không giả xanh khi suite chưa có. |
+| P00-T07 | `evidence/G00.md` gồm ADR links, output baseline/CI, contract version, reviewer và open risks. | Hai người review; mọi D01–D08/D14/D15 chặn P01–04 đã đóng hoặc gate ghi fail, không đẩy dependency giả. |

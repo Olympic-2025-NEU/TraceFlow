@@ -16,8 +16,13 @@
 | --- | --- |
 | [summary.md](./summary.md) | Bản đồ phase, đường găng và mốc Done |
 | [decision-log.md](./decision-log.md) | Các quyết định cần chốt bằng spike/ADR trước khi code phụ thuộc |
+| [implementation-baseline.md](./implementation-baseline.md) | Lựa chọn mặc định, layout và quy ước thống nhất cho AI; đổi bằng ADR có kiểm chứng |
 | [architecture.md](./architecture.md) | Ranh giới ba tầng, topology, các luồng quan trọng |
-| [database.md](./database.md), [api-contracts.md](./api-contracts.md), [event-contracts.md](./event-contracts.md), [security.md](./security.md) | Hợp đồng dữ liệu và bảo mật ban đầu; cập nhật bằng ADR khi implement |
+| [database.md](./database.md), [database-schema-v1.md](./database-schema-v1.md) | Bất biến dữ liệu và blueprint từng bảng/cột/FK/index/migration |
+| [core-record-payloads-v1.md](./core-record-payloads-v1.md) | Schema JSON theo từng kind của Core Data API, source key và quyền ghi |
+| [api-contracts.md](./api-contracts.md), [api-payloads-v1.md](./api-payloads-v1.md) | Route, request/response, auth, lỗi và test theo API |
+| [event-contracts.md](./event-contracts.md), [event-payloads-v1.md](./event-payloads-v1.md), [workflow-spec-v1.md](./workflow-spec-v1.md) | Envelope/event v1, ACK, BPMN GoodsIssue và bridge Flowable |
+| [deployment-spec-v1.md](./deployment-spec-v1.md), [ui-ai-spec-v1.md](./ui-ai-spec-v1.md), [security.md](./security.md) | Runtime/env/CI, màn hình H-P-D-I, tool AI và ranh giới quyền |
 | [test-matrix.md](./test-matrix.md) | AC-01…AC-13, điều kiện đề thi và minh chứng phải lưu |
 | [contest-scorecard.md](./contest-scorecard.md) | 50 điểm PoF và 50 điểm sản phẩm theo thể lệ, bằng chứng cho từng mục |
 | [demo-fixtures.md](./demo-fixtures.md) | Dữ liệu A→B→C, số dư mong đợi và biến thể lỗi kiểm thử |
@@ -27,11 +32,29 @@
 ## Quy tắc chạy phase
 
 - Task ID dạng `Pxx-Tyy` là ổn định. Khi làm việc, ghi PR/commit và bằng chứng test ở issue hoặc nhật ký thực hiện; đừng biến tài liệu kế hoạch thành báo cáo giả.
-- Mỗi task có đầu vào, việc làm, bằng chứng và điều kiện xong. Tách PR theo một lát cắt có thể kiểm thử; tránh mở hết schema rồi để API/UI trống.
+- Mỗi task có checklist gốc và **Hồ sơ giao AI theo từng task** ngay cuối file phase: path/đầu ra cụ thể, contract liên quan và phép thử phải pass. Đọc cả hai phần khi giao AI; tách PR theo lát cắt có thể kiểm thử.
 - Không bắt đầu phase phụ thuộc khi gate phase trước chưa đạt. Có thể nghiên cứu hoặc thiết kế trước, nhưng không đánh dấu Done cho đường găng.
 - Công nghệ phiên bản động: chốt **tag/digest**, giấy phép, API và tài nguyên máy trong `decision-log.md` khi đến phase; không dùng `latest` cho bản demo/release.
 - Mỗi instance A/B/C có app và dữ liệu riêng. Keycloak, gateway và storage có thể dùng cùng binary/image nhưng cấu hình và phạm vi tin cậy phải tách rõ; không cho truy cập DB xuyên instance.
-- Các ví dụ route/payload trong hợp đồng là **đề xuất để chốt** tại P00; nếu đổi, sửa hợp đồng, migration và test cùng một PR.
+- Blueprint v1 là baseline thi công, **chưa phải code đã chạy**. P00 spike chốt/điều chỉnh D01–D15; nếu đổi, sửa baseline, schema, API, event, task dossier, migration và test cùng PR trước khi làm phase phụ thuộc.
+
+## Prompt giao một task cho AI
+
+Điền `TASK_ID` và đưa nguyên văn prompt sau trong một chat có quyền đọc repo. Mỗi chat chỉ nhận một task hoặc một lát cắt cùng transaction; người review đối chiếu output với gate trước khi giao task phụ thuộc.
+
+```text
+Thực hiện TASK_ID trong documents/phase-plan/phase-xx-*.md.
+Đọc AGENTS.md, documents/referents/FOLDER_STRUCTURE.md, README phase-plan,
+implementation-baseline.md, decision-log.md, heading/checklist TASK_ID,
+đúng hàng TASK_ID ở "Hồ sơ giao AI", và các contract được dẫn tới.
+Kiểm tra codebase hiện tại và gate/ADR phụ thuộc; nếu contract mâu thuẫn,
+chỉ ra chính xác file/field và sửa contract theo ADR trước khi viết code.
+Chỉ triển khai phạm vi task, không tạo mock để đánh dấu Done.
+Giao diff tệp thật; migration + API/event/schema nếu đổi dữ liệu; test
+happy/negative/concurrency hoặc failure tương ứng hàng nghiệm thu; lệnh và
+output đã chạy; evidence/gate còn thiếu. Không đánh [x] khi test chưa chạy.
+Nếu bị chặn bởi phase trước, ghi blocker cụ thể và dừng phần phụ thuộc.
+```
 
 ## Danh mục phase
 

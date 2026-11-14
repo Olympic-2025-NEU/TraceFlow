@@ -50,3 +50,17 @@
 - [ ] Một người khác clone từ Git, dùng chỉ README + `.env.example`, build ERP/core API images, chạy migration và Compose; ghi thời gian/lỗi thực tế.
 - [ ] Dựng stack thứ hai với project name/volume/network/DB riêng; chứng minh không xung đột port/tên. Chưa cần federation.
 - **Bằng chứng:** terminal log, `compose ps/config`, DB role list đã redacted, health dependency và SHA image.
+
+## Hồ sơ giao AI theo từng task
+
+Áp dụng `deployment-spec-v1.md`; sau P00, thay image placeholder bằng version/digest ADR đã kiểm.
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P01-T01 | Thay `deploy/docker-compose.yml` cũ bằng `deploy/compose.yml`, sửa mọi lệnh gọi trong README/scripts; thêm `deploy/instances/{a,b,c}.env.example`, `deploy/README.md`; service matrix trong `deployment-spec-v1.md`, `edge/internal` networks và volume per project. | Chỉ một Compose entrypoint; `docker compose ... config` cho A/B/C pass; inspect không thấy PG/Redis/Flowable/etcd/storage admin public; mỗi project name/port khác nhau. |
+| P01-T02 | `Dockerfile` ERP, `services/core-data/Dockerfile`, worker entrypoint, `.dockerignore`; `package.json` script build cả hai. | `npm ci && npm run build` và image build từ checkout sạch; container non-root, image không chứa `.env`/host `node_modules`; worker chạy khi web process tắt. |
+| P01-T03 | Thay `db/migrations/0001_platform.sql` rỗng bằng **một** `0001_platform_core.sql` đầy đủ `audit_log/attachment/core_record` theo schema v1; `db/migrate.ts`, DB bootstrap roles `app_runtime/core_data/keycloak/flowable/migrator`; không dựa initdb mount rỗng. | Migrate DB trống rồi chạy lại không lỗi/không drop row; schema/roles đúng; checksum/version migration lưu lại; P03 không sửa migration 0001 đã áp dụng. |
+| P01-T04 | `deploy/keycloak/realm-template.json`, `deploy/apisix/routes.yaml`, `deploy/seaweedfs/bucket-policy.json`, Flowable DB/config và bootstrap script idempotent. | Restart từng service giữ realm/client, route, bucket, Flowable process data; default password bị thay, admin plane internal. |
+| P01-T05 | `.env.example` + parser typed/fail-fast cho biến ở `deployment-spec-v1.md`; `deploy/scripts/bootstrap.ps1` và `.sh` không chứa secret. | Thiếu từng nhóm biến báo tên biến, không in giá trị; A/B/C dùng credential/namespace riêng; secret scan pass. |
+| P01-T06 | `/api/v1/health/live|ready` cho ERP/core API, health worker, log JSON có `requestId`; smoke script ngoài gateway. | Tắt PG làm ERP/core ready fail, tắt Flowable làm workflow readiness/alert fail, không tạo vòng gateway↔app; public không lộ dependency detail. |
+| P01-T07 | `evidence/G01.md` gồm clean-clone commands, compose config/ps, image digest, DB identity query và thời gian cài. | Người khác dựng một stack, sau đó stack thứ hai không xung đột; script khởi động không cần tệp bí mật có sẵn trên máy tác giả. |

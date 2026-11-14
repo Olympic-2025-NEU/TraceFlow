@@ -49,3 +49,15 @@
 - [ ] AC-10/11 pass qua gateway với Keycloak, PG và API M03/M04 thật; prompt injection/permission/provider-failure tests pass.
 - [ ] AI không có DB credential và không có tool confirm/approve; Draft chỉ đổi stock sau user action được bảo vệ ở M03.
 - **Bằng chứng:** tool call audit, API snapshots, AI response có source, state/balance trước-sau, negative tests.
+
+## Hồ sơ giao AI theo từng task
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P10-T01 | `services/ai/{app,provider,config}/`, `requirements.lock`/container, D09 model/license/data policy; env `AI_PROVIDER/AI_KEY_REF/AI_BASE_URL` theo deploy spec. | ERP/trace chạy khi AI off; external provider không nhận PII/secret mặc định; timeout/quota/fallback có test. |
+| P10-T02 | `services/ai/tools/` JSON Schemas cho 5 tools trong `ui-ai-spec-v1.md`; delegated actor scoped + backend authz/audit. | Staff ngoài warehouse 403; AI không có Admin DB/confirm/approve tool; mỗi tool call có source ID/request ID. |
+| P10-T03 | `/ai/chat` lot resolver theo `(issuer,lot)`/batchId, getLot/getTrace, answer sources/asOf/verification. | Cùng lot code hai issuer → hỏi lại; số lượng khớp API; gap/upstream offline được nói rõ, không bịa GS1 chứng nhận. |
+| P10-T04 | `/ai/drafts` chỉ gọi `createReceiptDraft`/`createIssueDraft`, UI DraftReview; server bỏ `status/confirmedBy` client. | AI tạo Draft không movement; human edit/submit/approve/confirm qua M03; prompt “confirm ngay” không tạo confirmed row. |
+| P10-T05 | `services/ai/risk-rules.py` hoặc TypeScript rule adapter theo 4 rule trong `ui-ai-spec-v1.md`, output `{ruleId,ruleVersion,sourceIds,asOf,severity}`. | Same fixture→same risk, no automatic stock/status changes; missing data→unknown/gap. |
+| P10-T06 | `tests/ai/adversarial.*`: injection trong product/partner/file text, role escape, quota, timeout; redacted logging/UI error states. | Không exfiltrate/SQL/confirm; provider down có fallback link, tool audit không ghi prompt secret. |
+| P10-T07 | `evidence/G10.md` AC-10/11 fixture Q&A, Draft state/balance, tool audit, negative/provider failure tests. | AI service không DB write credential, stock chỉ đổi do human M03 action. |

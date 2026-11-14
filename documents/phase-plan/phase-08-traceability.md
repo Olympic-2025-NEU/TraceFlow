@@ -56,3 +56,16 @@
 - [ ] Trace local và Passport/QR chạy từ chứng từ M03 thật; AC-08 pass. Backward/forward local, duplicate event, policy/revoke/privacy tests pass.
 - [ ] AC-07/09 cross-instance chưa đánh dấu Done cho tới G09; ghi rõ những gap trước khi nhận federation.
 - **Bằng chứng:** event→source links, API graph fixture, QR scan, policy snapshot, projector retry logs.
+
+## Hồ sơ giao AI theo từng task
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P08-T01 | `0007_traceability.sql`: `trace_event`, `trace_link`, `passport_projection`, `qr_token` đúng schema v1; trace port `contexts/traceability/`. | Event issuer-qualified, document source FK, unique external event; same lot code khác issuer tách; không event từ Draft. |
+| P08-T02 | `workers/trace-projector.ts` nhận domain outbox event v1, upsert idempotent `core_record(kind='trace_projection')` theo `core-record-payloads-v1.md`, build link/source/checksum; lag metric. | Replay/duplicate cho cùng graph; worker down khiến lag rõ nhưng M03 vẫn confirm; rebuild từ nguồn khớp checksum. |
+| P08-T03 | `/lots/{id}/trace/backward` DFS/BFS bounded depth<=10 + visited set, node/edge/gap shape ở API spec. | Receipt→issue→transfer local link đúng, remote B chưa tới ở P08 thì gap; cycle không loop, quyền private vẫn được check. |
+| P08-T04 | `/lots/{id}/trace/forward` + impact UI, join issue/transfer/receiving/sale qua trace links. | Nhánh nhiều transfer/partial không duplicate; quantity có source; chưa có downstream summary thì hiển thị unknown, không claim đầy đủ. |
+| P08-T05 | `contexts/traceability/application/passport-policy.ts`: explicit allowlist `{productName,publicLotCode,originIssuer,timeline,verificationState,gaps,asOf}` + policy version, projection builder. | Raw row/PII/giá/stock/file private không vào JSON public; policy revoke/rebuild invalidates cache. |
+| P08-T06 | QR random >=128 bit, DB chỉ `token_hash`, `/qr` create/revoke và public Passport route/UI. | Scan URL trên mobile, token revoked/unknown 404, enumeration/rate test, không raw batch UUID trong QR. |
+| P08-T07 | `trace_event` evidence refs đến attachment `clean` có partner/public policy; timeline source/occurred/recorded/verification. | Infected/pending/private file không có link public; missing/partner_asserted hiển thị đúng, timezone UTC→local chỉ UI. |
+| P08-T08 | `evidence/G08.md` graph fixture/QR/privacy snapshot/projector crash/replay. | AC-08 pass; AC-07/09 xuyên instance chờ G09, không đánh dấu sớm. |

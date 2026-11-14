@@ -39,9 +39,9 @@
 
 ## P04-T06 — Kết nối app↔Flowable không distributed transaction
 
-- [ ] Lưu local approval request/state và outbox khi tạo yêu cầu; worker start Flowable process bằng correlation key idempotent. Callback hoặc polling idempotent cập nhật local state sau khi verify process/task.
-- [ ] Tình huống Flowable down: document chờ, không tự approve; webhook lặp/đến muộn không confirm document; timeout/rejection có lý do và audit.
-- [ ] Người tạo không tự duyệt nếu D06 yêu cầu separation; final `confirm` kiểm trạng thái approval được đồng bộ và quyền actor hiện tại.
+- [ ] Lưu local approval request/state và outbox khi tạo yêu cầu; worker start Flowable process bằng correlation key idempotent. Poller/reconciler theo `workflow-spec-v1.md` đồng bộ local state sau khi verify process/task; không dựng webhook chưa có hợp đồng xác thực.
+- [ ] Tình huống Flowable down: document chờ, không tự approve; kết quả task lặp/đến muộn không confirm document; timeout/rejection có lý do và audit.
+- [ ] GoodsIssue luôn cần Approver khác creator ở v1; final `confirm` kiểm trạng thái approval được đồng bộ và quyền actor hiện tại.
 - **Đầu ra:** workflow integration contract; **kiểm chứng:** kill Flowable giữa start/complete, phục hồi không tạo process/confirm trùng.
 
 ## P04-T07 — Quan sát và quyền vận hành
@@ -56,3 +56,16 @@
 - [ ] Một command mẫu ghi aggregate/audit/outbox atomically, worker dispatch và retry; một BPMN user task được hoàn thành qua engine, app phản ánh state.
 - [ ] Kiểm tra `applyAction` chỉ guard state; không dùng nó để claim AC-12. AC-12 còn chờ chứng từ M03 ở P07.
 - **Bằng chứng:** transaction/worker/Flowable logs, DB assertions, process definition version và failure tests.
+
+## Hồ sơ giao AI theo từng task
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P04-T01 | `platform/http/pipeline.ts` middleware thật `auth→authz→idempotency→validate→transaction→map response`, typed context `{actor,requestId,tx}`; route handler mỏng. | Instrument order test; fail auth/validation không mở transaction hoặc ghi DB; error shape đúng `api-payloads-v1.md`. |
+| P04-T02 | SQL `0002_platform_delivery.sql` `idempotency_record`; PG adapter `platform/http/idempotency.ts`, key/hash/expiry theo baseline. | 20 request đồng thời cùng key chỉ một effect; cùng key khác body 409; timeout/retry nhận response gốc, không outbox trùng. |
+| P04-T03 | `platform/outbox/` PG writer + `workers/outbox-dispatcher.ts`, claim `FOR UPDATE SKIP LOCKED`, lease/backoff/dead-letter; `delivery_attempt` thêm P09. | Kill worker trước/sau HTTP, restart không mất message; receiver dedupe; Redis mất không mất PG outbox. |
+| P04-T04 | `contracts/events/*.schema.json` cho event nội bộ trong `event-payloads-v1.md`; handler registry ở `composition/`; versioned serializer. | Confirm một lần→một event source/version; Draft/rollback→0; unknown version dead-letter có metric. |
+| P04-T05 | `deploy/flowable/processes/goods-issue-approval.bpmn20.xml`, Flowable PG/config, `platform/workflow/flowable-client.ts` dùng REST official. | Deploy/start/query/complete/reject/restart và process history; engine H2/default password không dùng ở demo. |
+| P04-T06 | SQL `approval_request` gồm line snapshot/decision intent, worker start/decision bridge + poller theo `workflow-spec-v1.md`; businessKey=approvalRequestId, local unique/lease/reconcile, không distributed transaction. | Flowable down/response lost/duplicate task complete không tạo process hoặc approval trùng; decision 202 pending, self-approval 403; stale approval không mở confirm. |
+| P04-T07 | Metrics `outbox_pending/dead`, `workflow_pending/failed`, latency; `app/admin/retries` qua use case; runbook dead-letter. | Inject one dead message/process stuck → alert có message/process ID, Admin retry có audit, Staff 403. |
+| P04-T08 | `evidence/G04.md` gồm SQL assertions transaction, outbox crash log, BPMN deployment/process/task IDs và reviewer. | Một approval task thật pass; `applyAction` TS chỉ guard, không được ghi AC-12 Done cho tới M03 P07. |

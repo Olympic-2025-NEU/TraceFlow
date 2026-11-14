@@ -63,3 +63,17 @@
 - [ ] AC-01/05/06/07/09 pass trên A/B/C có DB/identity/volumes riêng; outage, retry, dedupe, partial receipt, privacy và trace gap cases pass.
 - [ ] Từ clone sạch chạy lại kịch bản bằng API/UI, không thao tác tay vào DB; lưu provenance và balance assertions tại mỗi bước.
 - **Bằng chứng:** A/B/C compose/DB identity, redacted HTTP logs, outbox/inbox rows, trace graph, UI timeline, failure drill.
+
+## Hồ sơ giao AI theo từng task
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P09-T01 | `deploy/instances/{a,b,c}.env.example`, bootstrap/seed A/B/C trong `deployment-spec-v1.md` + `demo-fixtures.md`, `tests/e2e/abc.*`. | DB identities, realm/client, bucket/volume khác; stop B không stop A/C local commands; reset chỉ `DEMO_ONLY` allowlist. |
+| P09-T02 | `contracts/events/{transfer,receipt,downstream-impact}.schema.json` từ `event-payloads-v1.md`, canonical hash fixtures Node/Python. | `additionalProperties:false`, size/version/decimal validations, A/B sender/receiver contract tests pass độc lập. |
+| P09-T03 | `workers/federation-outbound.ts`, token client-credentials từ receiver, HTTP timeout/backoff, `delivery_attempt` PG adapter. | B offline/outbox pending, ACK mất retry same ID/hash, only matching ACK delivered; no HTTP trong M03 transaction. |
+| P09-T04 | `0008_federation.sql` inbox/ack + `/federation/events` M2M actor; unique issuer+message và issuer+event+type, payload JCS SHA-256. | Forged issuer 403, same hash replay same ACK, changed hash hoặc same event/new message ID 409, untrusted payload không đổi stock. |
+| P09-T05 | `identity_mapping` origin `(A,A-L1)` + sender batch B/C, pending_dependency resolver và gap trace link. | B→C không gộp lot theo SKU/tên; event trước parent giữ pending, sau parent reprocess một lần. |
+| P09-T06 | Verified inbox→B receiving Draft với một `sourceLineId`/actual cho mỗi sent line; Staff confirm actual10/sent12, event `receipt.confirmed.v1` có `actualLines` về A; lặp B→C. | B ACK=0, confirm B=10, discrepancy2; duplicate/missing line reject; A issue không đổi; C receive6; sender UI phân biệt technical/business state. |
+| P09-T07 | Upstream summaries A→B→C + downstream `downstream.impact.v1` C→B→A theo sharing policy; backward/forward graph API. | C thấy A/B/C khi A offline với status đúng; A chỉ thấy C khi summary đã được phép và nhận, nếu không gap. |
+| P09-T08 | Dashboard queue/inbox conflict/mapping gaps, admin retry API/runbook/credential rotation, fault scripts. | Operator tra message ID từ A qua B/C; token không log; bad version/size/clock/offline có alert và xử lý. |
+| P09-T09 | `evidence/G09.md` script A/B/C, DB balance 8/4/4, message/inbox/trace IDs, outage/replay/privacy. | AC-01/05/06/07/09 pass từ clone sạch, không query/chỉnh DB bằng tay để tạo kịch bản. |

@@ -26,7 +26,7 @@
 ## P11-T04 — P: giao dịch, nhận hàng và approval inbox
 
 - [ ] Product/batch/warehouse picker, receipt/issue/transfer Draft editor; hiển thị quantity/unit/expiry/quality/balance và validation từ server.
-- [ ] Approval inbox liên kết Flowable task; approve/reject yêu cầu reason/role, sau đó người có quyền confirm; không cho người tạo tự duyệt nếu D06 cấm.
+- [ ] Approval inbox liên kết Flowable task; approve/reject trả `decision_pending` tới khi worker/poller đối soát, reject cần reason; sau đó người có quyền confirm; người tạo không tự duyệt theo D06 v1.
 - [ ] Receiver thấy sent vs actual, discrepancy và technical ACK tách khỏi business receipt; UI retryable/offline/rejected states và lịch sử action.
 - **Đầu ra:** P journey; **kiểm chứng:** AC-03/04/06/12 thực hiện được không mở DB/Flowable admin UI.
 
@@ -56,3 +56,16 @@
 - [ ] Kiểm tra keyboard/tab order, labels, contrast, responsive, long strings, timezone/decimal, QR trên điện thoại; sửa blocker demo.
 - [ ] Ghi service-call trace cho từng vùng H/P/D/I và test tắt cả DX-Lab/ERP UI vẫn gọi được core API qua gateway. Không dùng mock làm bằng chứng gate.
 - **Bằng chứng:** e2e run/video đã redacted, accessibility checklist, gateway traces, UI screenshots trên mobile/desktop.
+
+## Hồ sơ giao AI theo từng task
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P11-T01 | `apps/dx-lab/` Next frontend riêng + `ui-ai-spec-v1.md` route map H/P/D/I; diagram gateway→core/ERP services. | Tắt DX-Lab/ERP UI vẫn smoke core SSO/gateway/data/file/Flowable; app tầng 2 không DB credential. |
+| P11-T02 | `apps/dx-lab/app/(workspace)/layout.tsx`, auth callback/session/nav, typed `lib/api-client` từ OpenAPI. | Login/logout/expiry/deep link, 401/403 và role nav; cookie/token không log/URL/localStorage trái ADR. |
+| P11-T03 | `/work`, `/profile`, `/admin/members`, `/admin/partners`; `ApprovalInbox` preview, org/user/partner forms theo API spec. | Admin edit, Staff 403; secretRef write-only; A/B/C org context đúng, empty/error/409 states. |
+| P11-T04 | `/operations/{receipts,issues,transfers,receivings}`, `/work/approvals`; `BatchPicker`, `DocumentEditor`, `ReceivingCompare`, `ApprovalInbox`. | UI làm AC-03/04/06/12, sent vs actual tách ACK, reject/self-approve/server 403, double submit không nhân movement. |
+| P11-T05 | `/data/inventory`, `/data/lots/[id]`, `/data/impact/[id]`, `/passport/[token]`; `TraceTimeline/ImpactGraph/PassportView`. | AC-07/08/09 qua UI, mobile QR, gap/source/asOf/verification rõ; DOM/network public không private fields. |
+| P11-T06 | `/assistant` + `AiPanel/DraftReview`, tool source list và editable Draft link. | AC-10/11 UI; provider down fallback, user thiếu quyền tool 403, AI không tự confirm. |
+| P11-T07 | Navigation/notification cross-link, loading/empty/409/429/503 states, Playwright A/B/C fixtures. | Người không viết UI hoàn thành A→B→C bằng browser, lỗi mạng không mất Draft hoặc double confirm. |
+| P11-T08 | `evidence/G11.md` viewport 360px/desktop, keyboard/labels/contrast, e2e logs, gateway trace theo H/P/D/I. | DX-Lab build/run riêng và gọi core/ERP thật; mock/screenshot không đủ gate. |

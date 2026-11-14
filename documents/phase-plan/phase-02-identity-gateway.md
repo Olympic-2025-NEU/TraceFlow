@@ -53,3 +53,16 @@
 
 - [ ] Chạy route/API/authz matrix và chụp log; xác nhận app không public trực tiếp, gateway admin bị cô lập; không có secret trong Git/log.
 - **Bằng chứng:** test 200/401/403/429, topology network, realm export, gateway config và threat model đã review.
+
+## Hồ sơ giao AI theo từng task
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P02-T01 | `deploy/keycloak/realm-template.json`: realm/client ERP+DX-Lab, confidential gateway, partner service accounts; `platform/identity/` token verifier/session adapter; mapping `sub`/aud/iss. | Browser auth-code+PKCE, logout/expiry/revoke, Admin MFA policy theo D04; wrong issuer/audience 401, không nhận password ở ERP. |
+| P02-T02 | `deploy/apisix/routes.yaml`: private `/api/v1/*`, ưu tiên core/files trước catch-all, OIDC bearer/session config; `tests/gateway/private.*`. | Valid token 200, missing/expired 401, wrong scope 403, forged identity header không nâng quyền, direct app port không public. |
+| P02-T03 | Chỉ route GET `/api/v1/public/passport/{token}` và static assets cần, `tests/gateway/public.*`, public projection policy. | POST public 405/403; anonymous không gọi products/files; unknown/revoked QR không lộ batch ID. |
+| P02-T04 | Realm client per receiver/partner, `/api/v1/federation/events` M2M route, `platform/identity/partner-actor.ts`, `tests/gateway/m2m.*`. | A→B 202; C giả A, wrong audience, revoked client, user token vào M2M đều 401/403 trước inbox insert. |
+| P02-T05 | `platform/access/policy.ts` và `security.md` matrix: Admin/Staff/Approver/Viewer/partner/public, warehouse/resource checks trong use case. | Bypass UI bằng HTTP vẫn 403; disabled membership/token stale không có side effect; IDOR trả 404/403 nhất quán. |
+| P02-T06 | Gateway admin/keycloak/Flowable/DB ports internal; CORS/CSRF/session cookie policy, SSRF allowlist cho endpoint partner, negative test scripts. | Network scan/compose inspect và threat cases `security.md` pass; không log token/PII. |
+| P02-T07 | `contracts/openapi/nexora-v1.yaml` security schemes, `deploy/README.md` realm/client provisioning + rotation/revoke; sample claims đã redacted. | Teammate tạo receiver client B cho A từ runbook, contract test user/public/M2M pass. |
+| P02-T08 | `evidence/G02.md` gồm route map, 200/401/403/429, issuer/audience, forged header, internal port scan và reviewer. | Không có private route hoặc admin plane public; thiếu bài test nào thì G02 fail. |

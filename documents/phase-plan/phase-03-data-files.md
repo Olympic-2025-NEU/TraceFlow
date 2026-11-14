@@ -4,7 +4,7 @@
 
 ## P03-T01 — Versioned platform schema và quyền DB
 
-- [ ] Thay migration nền rỗng bằng schema `platform` có `audit_log`, `attachment`, `core_record` và bảng version; tách migration/ERP/core API runtime roles, quyền tối thiểu và FK/check/unique cần thiết. Core API chỉ ghi tài nguyên nó sở hữu, không ghi stock/document tables.
+- [ ] Xác minh `0001_platform_core.sql` đã thay migration rỗng ở P01 chứa `audit_log`, `attachment`, `core_record` và bảng version; **không sửa migration đã áp dụng**, thay đổi sau này bằng migration bù số mới. Tách migration/ERP/core API runtime roles, quyền tối thiểu và FK/check/unique cần thiết. Core API chỉ ghi tài nguyên nó sở hữu, không ghi stock/document tables.
 - [ ] Chuẩn hóa adapter PG với một transaction client được truyền qua application ports; không mở transaction riêng bên trong Inventory/Audit/Outbox khi cùng command.
 - [ ] Chạy migration từ DB rỗng/đã có, rollback bằng migration hoặc restore đã thử; test thiếu quyền DB thì fail rõ.
 - **Đầu ra:** migration versioned + repository tests; **kiểm chứng:** PG có bảng/constraint và restart không chạy lại DDL gây lỗi.
@@ -55,3 +55,16 @@
 
 - [ ] Chạy transaction rollback/concurrency, upload/scan/privacy, backup/restore và migration tests trên clone sạch.
 - **Bằng chứng:** schema dump đã redacted, test logs, checksum file, restore drill và gateway request trace.
+
+## Hồ sơ giao AI theo từng task
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P03-T01 | Review/verify **migration 0001 đã tạo ở P01**, không sửa file đã áp dụng; `audit_log`, `attachment`, `core_record` đúng từng cột/FK/check/index schema v1; thêm migration bù số mới nếu ADR thay đổi; `services/core-data` PG repositories + role grants. | DB trống/upgrade chạy lại; `information_schema` và unique/permission assertions; core role không `UPDATE platform.audit_log`, app role không `UPDATE platform.core_record`; kho/tồn chưa có trước P06. |
+| P03-T02 | `platform/persistence/transaction.ts` đổi thành `run(work:(tx:PoolClient)=>Promise<T>)`; repositories nhận cùng `tx`, error mapping retry `40001/40P01` có giới hạn. | Inject fail sau aggregate, movement, audit, outbox → toàn bộ rollback; hai writer tranh stock chỉ một confirm đủ tồn. |
+| P03-T03 | `platform/audit/audit-recorder.ts` + PG adapter, redaction allowlist, audit query Admin theo target/request ID. | Success audit cùng transaction; deny/failure security log riêng; runtime `UPDATE/DELETE audit_log` bị PG từ chối, token không vào log. |
+| P03-T04 | `services/core-data/files/` S3 adapter, bucket quarantine/private/public, `POST/GET /api/v1/files`; metadata `attachment` và reconcile orphan job. | Upload SHA đúng; PG fail/storage fail có cleanup; URL private không dùng public; restart giữ bytes/metadata. |
+| P03-T05 | ClamAV adapter + scan worker: pending→clean/infected/error, signature version/time; MIME/size policy và file quarantine. | Clean được tải theo quyền; infected/timeout/service down không có URL/download, test fixture an toàn và audit. |
+| P03-T06 | `deploy/scripts/backup.*`, `restore.*`, runbook DB/objects/realm/BPMN/gateway config; backup manifest checksum, không secret. | Restore sang project khác, so row counts/checksum/permissions/process state; có RPO/RTO đo thực, không đè nguồn. |
+| P03-T07 | `services/core-data/records/` + `contracts/core-records/*.schema.json` theo `core-record-payloads-v1.md`; core/file OpenAPI + smoke qua gateway, ERP adapter dùng core API **sau commit**. | Khi tắt ERP/DX-Lab UI, core POST/GET record và upload/scan/download vẫn 200/401/403 đúng; extra kind/field/owner bị chặn, không SQL generic. |
+| P03-T08 | `evidence/G03.md`: migration/transaction/scan/privacy/restore logs, DB role checks, checksum và reviewer. | Một failure case bất kỳ để aggregate/audit/outbox lệch hoặc file pending tải được làm G03 fail. |

@@ -66,3 +66,17 @@
 - [ ] Chạy toàn bộ `test-matrix.md` trên release artifact/clone sạch; lưu lệnh, version, fixtures, outcome, người kiểm tra, known gaps; bất kỳ AC hoặc điều kiện đề thi bắt buộc fail thì chưa gọi hoàn thành.
 - [ ] Verify A/B/C DB isolation, backup restore, license/source access, public issue tracker, release và submission receipt; khóa evidence theo tag.
 - **Bằng chứng:** ma trận AC-01…13 ký xác nhận, CI/release logs, clean-install report, demo recording và submission receipt.
+
+## Hồ sơ giao AI theo từng task
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P13-T01 | `documents/phase-plan/evidence/release-traceability.md`: AC-01…13 + contest-scorecard row→test→commit/tag/owner; API/event/BPMN/migration freeze versions. | Không có tính năng vượt Ch6 hoặc docs claim feature chưa chạy; mọi AC có link bằng chứng. |
+| P13-T02 | `tests/e2e/abc.*`, `demo-fixtures.md` manifest UUID thực, A20→issue12 (Flowable)→B actual10→B issue6 (Flowable)→C receive6→C issue sale2 (Flowable)→SaleRecord; AI/QR/offline. | Balance A8/B4/C4, 3 process/decision IDs, message/source/trace/privacy/approval assertions; clean seed và UI/API không chỉnh DB tay. |
+| P13-T03 | `README.md` + `deploy/README.md` clean clone, env config, migration/seed, build/run **ngoài checkout** bằng source/image; Windows/Linux instructions nếu hỗ trợ. | Người khác chạy trên máy/VM mới, không private registry/tool đóng/sửa header/secret máy tác giả; AC-13 pass. |
+| P13-T04 | SPDX scan authored code, `LICENSE`, `NOTICE`, SBOM/license inventory, source-offer link, public web viewer/issues/CHANGELOG; không bundle sửa dependency. | AGPL metadata/full text/header consistent; asset/model/SDK/image có quyền phân phối; secret scan sạch. |
+| P13-T05 | `tests/security`, dependency/container/secret reports, redacted synthetic demo dataset và known-limitations list. | Blocker security/privacy/federation/AI được sửa; QR không private/PII; known gap bắt buộc không bị giấu. |
+| P13-T06 | Semver/contest tag + release **trước nộp**, source `.tar.gz`, checksums, image digests, migration/BPMN/schema versions, CI logs và SBOM. | Từ tag rebuild được, restore/rollback thử; release không chỉ `.zip/.rar`, timestamp trước submission receipt. |
+| P13-T07 | `documents/demo/runbook.md` 15 phút: core headless, H/P/D/I, A/B/C, Flowable, AI Draft, QR, bốn nguyên lý, nguồn mở; Q&A/tradeoff. | Teammate khác trình diễn theo script từ fresh seed trong thời gian, không mock hoặc gọi simulated OT là production. |
+| P13-T08 | `documents/submission/checklist.md` nguồn BTC xác nhận hạn, format/link, team info và receipt thực; contest-scorecard tick có evidence. | Không suy hạn từ PDF 2025, release/repo public trước gửi; push Git không tính đã nộp. |
+| P13-T09 | `evidence/G13.md` full AC + four principles + PoF rows với command/fixture/result/reviewer/tag. | Bất kỳ AC/điều kiện bắt buộc fail thì chưa gọi hoàn thành; clean install và backup/restore pass cùng artifact release. |

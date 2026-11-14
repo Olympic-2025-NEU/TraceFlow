@@ -56,3 +56,16 @@
 - [ ] Product, batch, warehouse API/UI và Inventory port chạy thật; uniqueness, quality, precision, concurrency tests pass.
 - [ ] AC-03 **chưa đánh dấu hoàn thành** cho đến khi P07 xác nhận nhập và balance tăng qua chứng từ; lưu cross-phase test ở G07.
 - **Bằng chứng:** migration, read/write request trace, balance/movement assertions, seed log.
+
+## Hồ sơ giao AI theo từng task
+
+| Task | Tệp/đầu ra cụ thể | Điều kiện kiểm chứng trước khi đóng |
+| --- | --- | --- |
+| P06-T01 | D07 trong `implementation-baseline.md`: numeric(20,3), EA nguyên, KG/L 3 lẻ, product unit bất biến; `contexts/catalog/domain/quantity.ts`. | Unit tests 0/âm/overflow/rounding/EA=1.5, trùng lot code khác issuer; JSON lượng là string. |
+| P06-T02 | `0004_catalog.sql` product/identifier, `contexts/catalog/` product aggregate/use cases/PG repo, `/products` + identifier API và UI. | SKU/identifier unique ở PG, EAN13 hợp lệ nếu dùng, archive giữ history, stale version 409. |
+| P06-T03 | `catalog.batch` origin issuer+lot/local code/date/quality, batch action routes và UI filter. | Trùng origin pair bị reject, cùng local code khác product theo rule, restricted/inspect/expired chặn issue; identity sau movement bất biến. |
+| P06-T04 | `0005_inventory.sql` warehouse + `system.membership_warehouse` FK join, `/warehouses` UI/API. | Kho archived còn balance bị chặn; user ngoài scope 403; code unique; revoke scope có hiệu lực lần check sau. |
+| P06-T05 | `stock_balance`/`stock_movement` đúng schema, `contexts/inventory/application/adjust-stock.ts` nhận shared `PoolClient`, lock order `(warehouse,batch)`. | Sum movement delta=balance; source_line+kind unique; two concurrent issues > stock chỉ một pass; không PATCH balance API. |
+| P06-T06 | Read repositories `/inventory/balances|movements`, UI lọc kho/lot/unit, cursor `(createdAt,id)`. | Pagination không lặp/thiếu row; totals khớp SQL; resource scope chặn kho không được cấp. |
+| P06-T07 | `db/seed/catalog.ts` tạo product/batch/warehouse **không** update balance bằng SQL; PG integration tests harness port. | Seed idempotent, rollback/concurrency pass; tồn mở đầu phải qua receipt P07. |
+| P06-T08 | `evidence/G06.md` migration/constraint, precision, lock/concurrency, API/UI logs. | AC-03 chưa hoàn tất trước receipt P07; G06 chứng minh nền catalog/inventory port thật. |
